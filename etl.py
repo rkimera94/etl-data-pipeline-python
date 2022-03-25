@@ -1,5 +1,4 @@
 from http import server
-import imp
 from lib2to3.pgen2 import driver
 from sqlalchemy import create_engine
 import pandas as pd
