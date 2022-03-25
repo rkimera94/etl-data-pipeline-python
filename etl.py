@@ -1,5 +1,8 @@
+from fileinput import close
+from genericpath import exists
 from http import server
 from lib2to3.pgen2 import driver
+from operator import index, le
 from sqlalchemy import create_engine
 import pandas as pd
 import os
@@ -39,7 +42,7 @@ def data_extract():
 
             df = pd.read_sql(f"select * from {table}", source_connection)
 
-       # load(df,source_connection)
+            load_data(df, table)
     except Exception as e:
         print('connection failed' + str(e))
 
@@ -47,4 +50,35 @@ def data_extract():
         source_connection.close()
 
 
-data_extract()
+def load_data(df, table_name):
+    try:
+        number_rows = 5
+        engine = create_engine(
+            f'postgresql://{db_user}:{db_pass}@{db_host}:5432/{db_name}')
+        add_row = number_rows + len(df)
+
+        print(
+            f'importing {number_rows} to {add_row}..... for table {table_name}')
+
+        df.to_sql(f'stg_{table_name}', engine,
+                  if_exists='replace', index=False)
+        number_rows += len(df)
+
+        print('data loaded successfully')
+
+    except Exception as e:
+        print('Database connection to insert data Failed', str(e))
+    finally:
+        print('Dataspace')
+
+
+# list = ['gre', 'eng', 'portalgese']
+# df_list = pd.DataFrame(list)
+
+
+# data_extract()
+
+try:
+    data_extract()
+except Exception as e:
+    print('Data migratio Failed', str(e))
