@@ -32,7 +32,8 @@ def data_extract():
         src_cursor.execute("""SELECT table_schema ||'.'|| table_name
                           FROM information_schema.tables
                           WHERE table_type='BASE TABLE'
-                          and table_schema not in ('pg_catalog', 'information_schema')""")
+                          and table_schema not in ('pg_catalog', 'information_schema')
+                          and  table_name  not like 'stg%';""")
 
         src_table = src_cursor.fetchall()
 
@@ -41,8 +42,11 @@ def data_extract():
             table = t[0]
 
             df = pd.read_sql(f"select * from {table}", source_connection)
+            # get the table name
 
-            load_data(df, table)
+            table_name = table.split('.')[1]
+
+            load_data(df, table_name)
     except Exception as e:
         print('connection failed' + str(e))
 
@@ -64,19 +68,13 @@ def load_data(df, table_name):
                   if_exists='replace', index=False)
         number_rows += len(df)
 
-        print('data loaded successfully')
+        print('Data loaded successfully')
 
     except Exception as e:
         print('Database connection to insert data Failed', str(e))
     finally:
         print('Dataspace')
 
-
-# list = ['gre', 'eng', 'portalgese']
-# df_list = pd.DataFrame(list)
-
-
-# data_extract()
 
 try:
     data_extract()
