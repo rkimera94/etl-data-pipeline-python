@@ -4,26 +4,31 @@ from sqlalchemy import create_engine
 import pandas as pd
 import os
 import psycopg2
-import pydoc
+import pyodbc
+
+from dotenv import load_dotenv
+load_dotenv()
+
+db_pass = os.getenv("db_pass")
+db_user = os.getenv("db_user")
+db_name = os.getenv("db_name")
+db_host = os.getenv("db_host")
 
 
 # variables
 
-pwd = os.environ['pg_pwd']
-user = os.environ['pg_user']
-database = os.environ['']
-db_server = os.environ['host_server']
-sql_server_drive = "{ODBC Driver 17 for SQL Server}"
-
-
-print('xxx', pwd)
-
 
 def data_extract():
     try:
-        src_connection = pydoc.connection('DRIVER =' + sql_server_drive + ';SERVER=' +
-                                          db_server + '\SQLEXPRESS' + ';DATABASE=' + database + ';UID=' + user + ';PWD' + pwd)
-        print(0)
+        src_connection = psycopg2.connect(user=db_user,
+                                          password=db_pass,
+                                          host=db_host,
+                                          dbname=db_name)
+
+        print(src_connection)
     except:
-        print(0)
+        print('connection failed')
         pass
+
+
+data_extract()
