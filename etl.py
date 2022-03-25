@@ -20,15 +20,31 @@ db_host = os.getenv("db_host")
 
 def data_extract():
     try:
-        src_connection = psycopg2.connect(user=db_user,
-                                          password=db_pass,
-                                          host=db_host,
-                                          dbname=db_name)
+        source_connection = psycopg2.connect(user=db_user,
+                                             password=db_pass,
+                                             host=db_host,
+                                             dbname=db_name)
+        src_cursor = source_connection.cursor()
 
-        print(src_connection)
-    except:
-        print('connection failed')
-        pass
+        src_cursor.execute("""SELECT table_schema ||'.'|| table_name
+                          FROM information_schema.tables
+                          WHERE table_type='BASE TABLE'
+                          and table_schema not in ('pg_catalog', 'information_schema')""")
+
+        src_table = src_cursor.fetchall()
+
+        for t in src_table:
+
+            table = t[0]
+
+            df = pd.read_sql(f"select * from {table}", source_connection)
+
+       # load(df,source_connection)
+    except Exception as e:
+        print('connection failed' + str(e))
+
+    finally:
+        source_connection.close()
 
 
 data_extract()
