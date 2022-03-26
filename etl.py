@@ -16,17 +16,32 @@ db_pass = os.getenv("db_pass")
 db_user = os.getenv("db_user")
 db_name = os.getenv("db_name")
 db_host = os.getenv("db_host")
+sql_driver = os.getenv("sql_drivers")
+db_source_type = os.getenv("source_database_type")
 
 
 # variables
 
 
+sql_driver_list = pyodbc.drivers()
+print(
+    'sql_driver', sql_driver_list[0])
+
+
 def data_extract():
     try:
-        source_connection = psycopg2.connect(user=db_user,
-                                             password=db_pass,
-                                             host=db_host,
-                                             dbname=db_name)
+        if db_source_type == 'postgres':
+            source_connection = psycopg2.connect(user=db_user,
+                                                 password=db_pass,
+                                                 host=db_host,
+                                                 dbname=db_name)
+            print('postgres database connection ........')
+        elif db_source_type == 'sql_server':
+            source_connection = pyodbc.connect(
+                'DRIVER={{sql_driver_list[0]}};SERVER={host};DATABASE={dbname};UID={user};PWD={password}')
+
+            print('sql server database connection ..............')
+
         src_cursor = source_connection.cursor()
 
         src_cursor.execute("""SELECT table_schema ||'.'|| table_name
@@ -73,7 +88,7 @@ def load_data(df, table_name):
     except Exception as e:
         print('Database connection to insert data Failed', str(e))
     finally:
-        print('Dataspace')
+        print('Data migrated')
 
 
 try:
